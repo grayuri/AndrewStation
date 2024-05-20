@@ -1,0 +1,17 @@
+@import '../../variables.scss';
+
+.print-problems-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .borderline {
+    border-top: 2px solid $n3;
+  }
+
+  .lines {
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+  }
+}

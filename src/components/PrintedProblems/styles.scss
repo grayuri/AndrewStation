@@ -1,0 +1,22 @@
+@import '../../variables.scss';
+
+.printed-problems-container {
+  display: flex;
+  gap: 4px;
+  flex-direction: column;
+  gap: 8px;
+
+  .problems-list {
+    list-style: inside;
+    
+    .status {
+      color: $orange-2;
+      @include h4();
+    }
+    
+    li {
+      color: $dark-blue-1;
+      @include p1-r();
+    }
+  }
+}

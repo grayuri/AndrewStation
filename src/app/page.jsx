@@ -7,6 +7,7 @@ import Title from "@/components/Title";
 import AddButton from "@/components/AddButton";
 import ModalForm from "@/components/ModalForm";
 import GenericUpdateForm from "@/components/GenericUpdateForm";
+import PrintButton from "@/components/PrintButton";
 import { Line } from "../../classes/Line";
 import './Home.scss';
 
@@ -14,7 +15,6 @@ export default function Home() {
   const [lines, setLines] = useState([])
   const [focusedLine, setFocusedLine] = useState()
   const [showModal, setShowModal] = useState(false)
-
   
   function focusLine(id) {
     setShowModal(true)
@@ -68,11 +68,17 @@ export default function Home() {
   }
 
   function deleteLine(id) {
+    const allStations = getAllDatabaseItems("stations")
+    const allProblems = getAllDatabaseItems("problems")
+
     const linesWithoutThisLine = lines.filter(line => line.id !== id)
+    const stationsWithoutThisLine = allStations.filter(station => station.lineId !== id)
+    const problemsWithoutThisLine = allProblems.filter(problem => problem.lineId !== id)
+
     setLines(linesWithoutThisLine)
     localStorage.setItem("lines", JSON.stringify(linesWithoutThisLine))
-    localStorage.setItem("stations", JSON.stringify([]))
-    localStorage.setItem("problems", JSON.stringify([]))
+    localStorage.setItem("stations", JSON.stringify(stationsWithoutThisLine))
+    localStorage.setItem("problems", JSON.stringify(problemsWithoutThisLine))
   }
 
   function getSavedLines() {
@@ -86,6 +92,11 @@ export default function Home() {
     }))
 
     setLines(linesWithProblems)
+  }
+
+  function getAllDatabaseItems(item) {
+    const items = JSON.parse(localStorage.getItem(item))
+    if (items) return items
   }
 
   function getProblemsQuantityInTheSavedLine(lineId) {
@@ -120,6 +131,7 @@ export default function Home() {
   return (
     <main className="home">
       <Title>Todas as <span className="highlight">Linhas</span></Title>
+      <PrintButton />
       <div className="lines">
         {
           lines.map(line => (

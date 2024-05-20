@@ -1,6 +1,10 @@
 @import '../../../variables.scss';
 
 .station-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
   .problems {
     display: flex;
     flex-direction: column;

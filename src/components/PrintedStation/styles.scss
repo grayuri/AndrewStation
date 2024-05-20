@@ -1,0 +1,15 @@
+@import '../../variables.scss';
+
+.printed-station-container {
+  .station-name {
+    color: $blue-3;
+    @include h3();
+    margin-bottom: 4px;
+  }
+
+  .problems {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+}

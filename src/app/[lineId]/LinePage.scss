@@ -1,6 +1,10 @@
 @import '../../variables.scss';
 
 .line-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
   .stations {
     display: grid;
     justify-content: center;

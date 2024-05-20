@@ -1,6 +1,10 @@
 @import '../../../../variables.scss';
 
 .problem-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
   .backdrop {
     position: fixed;
     top: 0;

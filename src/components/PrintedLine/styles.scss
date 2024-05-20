@@ -1,0 +1,15 @@
+@import '../../variables.scss';
+
+.printed-line-container {
+  .line-name {
+    color: $blue-1;
+    @include h2();
+    margin-bottom: 4px;
+  }
+
+  .stations {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+}

@@ -1,4 +1,8 @@
 .home {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
   .lines {
     display: grid;
     justify-content: center;
