@@ -1,0 +1,27 @@
+@import '../../variables.scss';
+
+.breadcrumbs {
+  display: flex;
+  gap: 6px;
+  width: fit-content;
+  margin: auto;
+  
+  .link {
+    display: flex;
+    gap: 6px;
+
+    a, span {
+      color: $n3;
+      @include l2-r();
+    }
+    
+    .actual-route {
+      @include l2-b();
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+    
+  }
+}

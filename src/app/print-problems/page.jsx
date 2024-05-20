@@ -9,7 +9,8 @@ import setTwoNumbersDigits from "@/utils/setTwoNumbersDigits"
 import './styles.scss'
 
 export default function PrintProblemsPage() {
-  const [linesWithProblems, setLinesWithProblems]  = useState([])
+  const [linesWithProblems, setLinesWithProblems] = useState([])
+  const [allContentLoad, setAllContentLoad] = useState(false)
 
   const router = useRouter()
   const date = new Date()
@@ -75,10 +76,14 @@ export default function PrintProblemsPage() {
 
     setLinesWithProblems(desiredLines)
   }
-
+  
   useEffect(() => {
     getLinesAndStationsWithProblems()
   }, [])
+
+  useEffect(() => {
+    if (allContentLoad === true) window.print()
+  }, [allContentLoad])
 
   return (
     <main className="print-problems-page">
@@ -87,7 +92,7 @@ export default function PrintProblemsPage() {
       <div className="lines">
         {
           linesWithProblems?.map(line => (
-            <PrintedLine line={line} key={line.id} />
+            <PrintedLine line={line} key={line.id} confirmLoading={() => setAllContentLoad(true)} />
           ))
         }
       </div>

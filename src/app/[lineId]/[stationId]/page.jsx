@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import Title from '@/components/Title'
 import SingleProblem from '@/components/Problem'
 import AddButton from '@/components/AddButton'
+import Breadcrumbs from '@/components/Breadcrumbs'
 import { Problem } from '../../../../classes/Problem'
 import './StationPage.scss'
 
@@ -95,6 +96,7 @@ export default function StationPage() {
   return (
     <main className="station-page">
       <Title>Problemas da <span className="highlight">{station?.name}</span></Title>
+      <Breadcrumbs />
       <div className="problems">
         {
           problems?.map(problem => (

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import './styles.scss'
 
 
-export default function PrintedProblems({ problems }) {
+export default function PrintedProblems({ problems, confirmLoading }) {
   const [quantityOfProblems, setQuantityOfProblems] = useState()
 
   function getQuantityOfProblems() {
@@ -24,6 +24,7 @@ export default function PrintedProblems({ problems }) {
 
   useEffect(() => {
     getQuantityOfProblems()
+    confirmLoading()
   },[])
 
   return (

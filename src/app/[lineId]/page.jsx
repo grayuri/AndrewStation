@@ -6,10 +6,11 @@ import { usePathname } from 'next/navigation';
 import ProblemsOverviewCard from '@/components/ProblemsOverviewCard';
 import Title from '@/components/Title';
 import AddButton from '@/components/AddButton';
+import GenericUpdateForm from '@/components/GenericUpdateForm';
+import ModalForm from '@/components/ModalForm';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { Station } from '../../../classes/Station';
 import './LinePage.scss'
-import ModalForm from '@/components/ModalForm';
-import GenericUpdateForm from '@/components/GenericUpdateForm';
 
 export default function LinePage() {
   const [stations, setStations] = useState([])
@@ -175,6 +176,7 @@ export default function LinePage() {
   return (
     <main className='line-page'>
       <Title>Estações da <span className="highlight">{line?.name}</span></Title>
+      <Breadcrumbs />
       <div className="stations">
         {
           stations.map(station => (
