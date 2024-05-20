@@ -1,0 +1,241 @@
+// Color Variants
+// --------------
+// Primaries
+$orange-1: #FF9900;
+$orange-2: #FFAD32;
+$orange-3: #FFC164;
+
+$dark-blue-1: #3979AA;
+$dark-blue-2: #5394C5;
+$dark-blue-3: #78ABD2;
+
+$blue-1: #0091FF;
+$blue-2: #34A7FF;
+$blue-3: #66BDFF;
+
+
+// Neutrals
+$n1: #1A3642;
+$n2: #295467;
+$n3: #38708A;
+$n4: #AECDDF;
+$n5: #D5E6EE;
+$n6: #F7FAFC;
+
+// Accents
+$green-1: #00FF54;
+$green-2: #32FF75;
+$green-3: #68FF99;
+
+$yellow-1: #FFD700;
+$yellow-2: #FFDF34;
+$yellow-3: #FFE768;
+
+$red-1: #FF4200;
+$red-2: #FF6834;
+$red-3: #FF8C64;
+
+///////////////////////////////////////////////////////////////////////////////
+
+@import url('https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+@mixin headingFont() {
+  font-family: "Montserrat", sans-serif;
+}
+
+@mixin bodyFont() {
+  font-family: "Bitter", serif;
+}
+
+@mixin labelFont() {
+  font-family: "Montserrat", sans-serif;
+}
+
+// Typography Variants
+// -------------------
+// Headings
+@mixin h1() {
+  font-weight: 600;
+  line-height: 1.25;
+  @include headingFont();
+  @include getFontSize(40px);
+}
+
+@mixin h2() {
+  font-weight: 600;
+  line-height: 1.25;
+  @include headingFont();
+  @include getFontSize(32px);
+}
+
+@mixin h3() {
+  font-weight: 600;
+  line-height: 1.25;
+  @include headingFont();
+  @include getFontSize(24px);
+}
+
+@mixin h4() {
+  font-weight: 600;
+  line-height: 1.25;
+  @include headingFont();
+  @include getFontSize(16px);
+}
+
+@mixin h5() {
+  font-weight: 600;
+  line-height: 1.25;
+  @include headingFont();
+  @include getFontSize(14px);
+}
+
+// Bodies
+@mixin p1-r() {
+  font-weight: 400;
+  line-height: 1.5;
+  @include bodyFont();
+  @include getFontSize(16px);
+}
+
+@mixin p1-b() {
+  font-weight: 600;
+  line-height: 1.5;
+  @include bodyFont();
+  @include getFontSize(16px);
+}
+
+@mixin p2-r() {
+  font-weight: 400;
+  line-height: 1.5;
+  @include bodyFont();
+  @include getFontSize(14px);
+}
+
+@mixin p2-b() {
+  font-weight: 600;
+  line-height: 1.5;
+  @include bodyFont();
+  @include getFontSize(14px);
+}
+
+@mixin p3-r() {
+  font-weight: 400;
+  line-height: 1.5;
+  @include bodyFont();
+  @include getFontSize(12px);
+}
+
+@mixin p3-b() {
+  font-weight: 600;
+  line-height: 1.5;
+  @include bodyFont();
+  @include getFontSize(12px);
+}
+
+// Labels
+@mixin l1-r() {
+  font-weight: 400;
+  line-height: 1.25;
+  @include labelFont();
+  @include getFontSize(20px);
+}
+
+@mixin l1-b() {
+  font-weight: 600;
+  line-height: 1.25;
+  @include labelFont();
+  @include getFontSize(20px);
+}
+
+@mixin l2-r() {
+  font-weight: 400;
+  line-height: 1.25;
+  @include labelFont();
+  @include getFontSize(16px);
+}
+
+@mixin l2-b() {
+  font-weight: 600;
+  line-height: 1.25;
+  @include labelFont();
+  @include getFontSize(16px);
+}
+
+@mixin l3-r() {
+  font-weight: 400;
+  line-height: 1.25;
+  @include labelFont();
+  @include getFontSize(14px);
+}
+
+@mixin l3-b() {
+  font-weight: 600;
+  line-height: 1.25;
+  @include labelFont();
+  @include getFontSize(14px);
+}
+
+@mixin l4-r() {
+  font-weight: 400;
+  line-height: 1.25;
+  @include labelFont();
+  @include getFontSize(12px);
+}
+
+@mixin l4-b() {
+  font-weight: 600;
+  line-height: 1.25;
+  @include labelFont();
+  @include getFontSize(12px);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+// Shadow Variants
+@mixin umbra1DP() { box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.14); }
+@mixin penumbra1DP() { box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.12); }
+@mixin ambient1DP() { box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.20); }
+
+@mixin umbra2DP() { box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.14); }
+@mixin penumbra2DP() { box-shadow: 0px 3px 4px 0px rgba(0, 0, 0, 0.12); }
+@mixin ambient2DP() { box-shadow: 0px 1px 5px 0px rgba(0, 0, 0, 0.20); }
+
+@mixin umbra3DP() { box-shadow: 0px 3px 3px 0px rgba(0, 0, 0, 0.14); }
+@mixin penumbra3DP() { box-shadow: 0px 3px 4px 0px rgba(0, 0, 0, 0.12); }
+@mixin ambient3DP() { box-shadow: 0px 1px 8px 0px rgba(0, 0, 0, 0.20); }
+
+@mixin umbra4DP() { box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.14); }
+@mixin penumbra4DP() { box-shadow: 0px 4px 5px 0px rgba(0, 0, 0, 0.12); }
+@mixin ambient4DP() { box-shadow: 0px 1px 10px 0px rgba(0, 0, 0, 0.20); }
+
+@mixin umbra6DP() { box-shadow: 0px 6px 10px 0px rgba(0, 0, 0, 0.14); }
+@mixin penumbra6DP() { box-shadow: 0px 1px 18px 0px rgba(0, 0, 0, 0.12); }
+@mixin ambient6DP() { box-shadow: 0px 3px 5px 0px rgba(0, 0, 0, 0.20); }
+
+@mixin umbra8DP() { box-shadow: 0px 8px 10px 1px rgba(0, 0, 0, 0.14); }
+@mixin penumbra8DP() { box-shadow: 0px 3px 14px 3px rgba(0, 0, 0, 0.12); }
+@mixin ambient8DP() { box-shadow: 0px 4px 15px 0px rgba(0, 0, 0, 0.20); }
+
+@mixin umbra9DP() { box-shadow: 0px 9px 12px 1px rgba(0, 0, 0, 0.14); }
+@mixin penumbra9DP() { box-shadow: 0px 3px 16px 2px rgba(0, 0, 0, 0.12); }
+@mixin ambient9DP() { box-shadow: 0px 5px 6px 0px rgba(0, 0, 0, 0.20); }
+
+@mixin umbra12DP() { box-shadow: 0px 12px 17px 2px rgba(0, 0, 0, 0.14); }
+@mixin penumbra12DP() { box-shadow: 0px 12px 17px 2px rgba(0, 0, 0, 0.12); }
+@mixin ambient12DP() { box-shadow: 0px 12px 17px 2px rgba(0, 0, 0, 0.20); }
+
+@mixin umbra16DP() { box-shadow: 0px 16px 24px 2px rgba(0, 0, 0, 0.14); }
+@mixin penumbra16DP() { box-shadow: 0px 6px 30px 5px rgba(0, 0, 0, 0.12); }
+@mixin ambient16DP() { box-shadow: 0px 8px 10px 0px rgba(0, 0, 0, 0.20); }
+
+@mixin umbra24DP() { box-shadow: 0px 24px 38px 3px rgba(0, 0, 0, 0.14); }
+@mixin penumbra24DP() { box-shadow: 0px 9px 46px 8px rgba(0, 0, 0, 0.12); }
+@mixin ambient24DP() { box-shadow: 0px 11px 15px 0px rgba(0, 0, 0, 0.20); }
+
+///////////////////////////////////////////////////////////////////////////////
+
+// Utils
+@mixin getFontSize($minimum) {
+  font-size: clamp($minimum, 1.2vw, $minimum * 1.2);
+}

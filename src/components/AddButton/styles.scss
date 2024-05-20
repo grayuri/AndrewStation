@@ -1,0 +1,26 @@
+@import '../../variables.scss';
+
+.add-button {
+  background-color: $dark-blue-1;
+  place-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  // padding: 24px;
+  border-radius: 50%;
+  transition: 0.24s ease;
+  cursor: pointer;
+  @include umbra24DP();
+  width: 64px;
+  height: 64px;
+  aspect-ratio: 1;
+
+  &:hover {
+    background-color: $dark-blue-2;
+  }
+
+  .icon {
+    color: $n6;
+    @include getFontSize(40px)
+  }
+}

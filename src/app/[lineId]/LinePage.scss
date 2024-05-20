@@ -1,0 +1,12 @@
+@import '../../variables.scss';
+
+.line-page {
+  .stations {
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    place-items: center;
+    gap: 24px;
+    grid-template-columns: repeat(auto-fit, 220px);
+  }
+}

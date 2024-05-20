@@ -1,0 +1,111 @@
+@import '../../variables.scss';
+
+a {
+  text-decoration: none;
+}
+
+.problems-overview-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 220px;
+  height: 100%;
+  border: 2px solid $dark-blue-1;
+  border-radius: 12px;
+  overflow: hidden;
+  @include umbra12DP();
+  transition: 0.24s ease;
+
+  &:hover {
+    scale: 1.032;
+    @include ambient12DP();
+  }
+  
+
+  .top {
+    display: flex;
+    width: 100%;
+    flex: 1;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    background-color: $dark-blue-1;
+    color: $n6;
+    @include l2-b();
+
+    span {
+      display: block;
+      // max-width: 80%;
+      text-wrap: wrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .icons {
+      display: flex;
+      gap: 8px;
+
+      .icon {
+        color: $n4;
+        transition: 0.24s ease;
+        @include getFontSize(24px);
+        cursor: pointer;
+  
+        &:hover {
+          color: $n6;
+        }
+      }
+    }
+  }
+
+  .informations {
+    .problem-quantity {
+      padding: 12px;
+      border-bottom: 1px dashed $n4;
+      text-align: center;
+      color: $n1;
+      @include l2-r();
+    }
+  
+    .problem-status {
+      display: flex;
+      justify-content: space-between;
+      list-style: none;
+      padding: 12px;
+      margin: 0;
+
+      li {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        color: $n1;
+        
+        &:nth-child(1) {
+          .circle {
+            background-color: $red-1;
+          }
+        }
+
+        &:nth-child(2) {
+          .circle {
+            background-color: $green-1;
+          }
+        }
+
+        .circle {
+          height: 24px;
+          aspect-ratio: 1;
+          border: 1px solid $n3;
+          border-radius: 50%;
+          @include umbra6DP();
+
+        }
+
+        span {
+          @include l2-r();
+        }
+      }
+    }
+  }
+}
