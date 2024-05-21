@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
 import StationPage from "../page";
@@ -15,21 +15,23 @@ export default function UpdateProblemPage() {
   const problemId = pathname.split("/")[3]
 
   function getProblemsFromDatabase() {
-    const problemsJson = localStorage.getItem("problems")
-    const data = JSON.parse(problemsJson)
-    return data
+    const problems = JSON.parse(localStorage.getItem("problems")) || []
+    return problems
   }
 
-  function getProblem() {
+  const getProblem = useCallback(() => {
     const problems = getProblemsFromDatabase()
-    const desiredProblem = problems.find(problem => problem.id === problemId)
 
-    setProblem(desiredProblem)
-  }
+    if (problems.length > 0) {
+      const desiredProblem = problems.find(problem => problem.id === problemId)
+      setProblem(desiredProblem)
+    }
+  }, [problemId])
 
   function updateProblemFromDatabase(problem) {
     const problems = getProblemsFromDatabase()
-    const problemsWithoutThisProblem = problems.filter(p => p.id !== problem.id)
+
+    const problemsWithoutThisProblem = problems?.filter(p => p.id !== problem.id) || []
     const problemsWithUpdatedProblem = [ ...problemsWithoutThisProblem, problem ]
 
     localStorage.setItem("problems", JSON.stringify(problemsWithUpdatedProblem))
@@ -53,7 +55,7 @@ export default function UpdateProblemPage() {
 
   useEffect(() => {
     getProblem()
-  }, [])
+  }, [getProblem])
 
   return (
     <div className="problem-page">

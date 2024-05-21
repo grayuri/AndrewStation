@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import ProblemsOverviewCard from "@/components/ProblemsOverviewCard";
 import Title from "@/components/Title";
@@ -81,52 +81,55 @@ export default function Home() {
     localStorage.setItem("problems", JSON.stringify(problemsWithoutThisLine))
   }
 
-  function getSavedLines() {
-    const savedLines = JSON.parse(localStorage.getItem("lines"))
+  const getSavedLines = useCallback(() => {
+    const savedLines = JSON.parse(localStorage.getItem("lines")) || []
 
-    if (!savedLines) return
-
-    const linesWithProblems = savedLines.map(line => ({
-      ...line,
-      ...getProblemsQuantityInTheSavedLine(line.id)
-    }))
-
-    setLines(linesWithProblems)
-  }
+    if (savedLines.length > 0) {
+      const linesWithProblems = savedLines.map(line => ({
+        ...line,
+        ...getProblemsQuantityInTheSavedLine(line.id)
+      }))
+  
+      setLines(linesWithProblems)
+    }
+  }, [])
 
   function getAllDatabaseItems(item) {
-    const items = JSON.parse(localStorage.getItem(item))
-    if (items) return items
+    const items = JSON.parse(localStorage.getItem(item)) || []
+    return items
   }
 
   function getProblemsQuantityInTheSavedLine(lineId) {
-    const problemsJson = localStorage.getItem("problems")
-    const data = JSON.parse(problemsJson)
+    const problems = JSON.parse(localStorage.getItem("problems")) || []
 
-    const problemsInTheLine = data.filter(problem => problem.lineId === lineId)
-
-    let problemsResolved = 0
-    let problemsUnresolved = 0
-    let problemsTotal = 0
-
-    problemsInTheLine.forEach(problem => {
-      if (problem.resolved === true) problemsResolved++
-      else problemsUnresolved++
-      problemsTotal++
-    })
-
-    const allProblems = {
-      problemsResolved,
-      problemsUnresolved,
-      problemsTotal
+    if (problems.length > 0) {
+      const problemsInTheLine = problems.filter(problem => problem.lineId === lineId)
+  
+      let problemsResolved = 0
+      let problemsUnresolved = 0
+      let problemsTotal = 0
+  
+      problemsInTheLine.forEach(problem => {
+        if (problem.resolved === true) problemsResolved++
+        else problemsUnresolved++
+        problemsTotal++
+      })
+  
+      const allProblems = {
+        problemsResolved,
+        problemsUnresolved,
+        problemsTotal
+      }
+  
+      return allProblems
     }
 
-    return allProblems
+    return []
   }
 
   useEffect(() => {
     getSavedLines()
-  },[])
+  },[getSavedLines])
 
   return (
     <main className="home">

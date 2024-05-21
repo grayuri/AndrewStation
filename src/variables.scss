@@ -41,15 +41,18 @@ $red-3: #FF8C64;
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 
 @mixin headingFont() {
-  font-family: "Montserrat", sans-serif;
+  // font-family: "Montserrat", sans-serif;
+  font-family: var(--font-montserrat);
 }
 
 @mixin bodyFont() {
-  font-family: "Bitter", serif;
+  // font-family: "Bitter", serif;
+  font-family: var(--font-bitter);
 }
 
 @mixin labelFont() {
-  font-family: "Montserrat", sans-serif;
+  // font-family: "Montserrat", sans-serif;
+  font-family: var(--font-montserrat);
 }
 
 // Typography Variants

@@ -33,35 +33,33 @@ export default function LinePage() {
     setShowModal(false)
   }
 
-  function getLine() {
-    const lines = JSON.parse(localStorage.getItem("lines"))
+  const getLine = useCallback(() => {
+    const lines = JSON.parse(localStorage.getItem("lines")) || []
     const actualLine = lines.find(savedLine => savedLine.id === lineId)
     
-    if (!actualLine) console.log("Not Found!")
-
-    setLine(actualLine)
-  }
+    if (actualLine) setLine(actualLine)
+  },[lineId])
 
   function addStationToDatabase(station) {
-    let savedStations = getSavedStations()
+    const savedStations = getSavedStations()
 
-    if (!savedStations) savedStations = []
-
-    const allStations = [...savedStations, station]
-    
-    localStorage.setItem("stations", JSON.stringify(allStations))
+    if (savedStations) {
+      const allStations = [...savedStations, station]
+      
+      localStorage.setItem("stations", JSON.stringify(allStations))
+    }
   }
 
   function deleteStationOfDatabase(stationId) {
-    let savedStations = getSavedStations()
+    const savedStations = getSavedStations()
 
-    if (!savedStations) savedStations = []
-
-    const allStations = savedStations.filter(station => station.id !== stationId)
-    const allProblemsOfOtherStations = getProblemsOfDifferentStations(stationId)
-
-    localStorage.setItem("stations", JSON.stringify(allStations))
-    localStorage.setItem("problems", JSON.stringify(allProblemsOfOtherStations))
+    if (savedStations) {
+      const allStations = savedStations.filter(station => station.id !== stationId)
+      const allProblemsOfOtherStations = getProblemsOfDifferentStations(stationId)
+  
+      localStorage.setItem("stations", JSON.stringify(allStations))
+      localStorage.setItem("problems", JSON.stringify(allProblemsOfOtherStations))
+    }
   }
 
   const updateStationFromDatabase = useCallback((station) => {
@@ -111,67 +109,80 @@ export default function LinePage() {
   }
 
   function getSavedStations() {
-    const savedStations = JSON.parse(localStorage.getItem("stations"))
-    if (!savedStations) return
-    else return savedStations
+    const savedStations = JSON.parse(localStorage.getItem("stations")) || []
+    return savedStations
   }
 
   function getProblemsOfDifferentStations(stationId) {
-    const allProblems = JSON.parse(localStorage.getItem("problems"))
-    const problemsDifferentOfThisStation = allProblems.filter(
-      problem => problem.stationId !== stationId
-    )
-    return problemsDifferentOfThisStation
-  }
+    const allProblems = JSON.parse(localStorage.getItem("problems")) || []
 
-  function getFilteredSavedStations() {
-    const savedStations = getSavedStations()
-
-    if (!savedStations) return
-
-    const savedStationsOfThisLine = savedStations.filter(station => {
-      return station.lineId === lineId
-    })
-
-    const stationsWithProblems = savedStationsOfThisLine.map(station => ({
-      ...station,
-      ...getProblemsQuantityInTheSavedStation(station.id)
-    }))
-
-    if (savedStationsOfThisLine) setStations(stationsWithProblems)
-
-    return savedStationsOfThisLine
-  }
-
-  function getProblemsQuantityInTheSavedStation(stationId) {
-    const problemsJson = localStorage.getItem("problems")
-    const data = JSON.parse(problemsJson)
-
-    const problemsInTheLine = data.filter(problem => problem.stationId === stationId)
-
-    let problemsResolved = 0
-    let problemsUnresolved = 0
-    let problemsTotal = 0
-
-    problemsInTheLine.forEach(problem => {
-      if (problem.resolved === true) problemsResolved++
-      else problemsUnresolved++
-      problemsTotal++
-    })
-
-    const allProblems = {
-      problemsResolved,
-      problemsUnresolved,
-      problemsTotal
+    if (allProblems.length > 0) {
+      const problemsDifferentOfThisStation = allProblems.filter(
+        problem => problem.stationId !== stationId
+      )
+      return problemsDifferentOfThisStation
     }
 
-    return allProblems
+    return []
+  }
+
+  const getFilteredSavedStations = useCallback(() => {
+    const savedStations = getSavedStations()
+
+    if (savedStations.length > 0) {
+      const savedStationsOfThisLine = savedStations.filter(station => {
+        return station.lineId === lineId
+      })
+      
+      if (savedStationsOfThisLine.length > 0) {
+        const stationsWithProblems = savedStationsOfThisLine.map(station => ({
+          ...station,
+          ...getProblemsQuantityInTheSavedStation(station.id)
+        }))
+
+        setStations(stationsWithProblems)
+        return savedStationsOfThisLine
+      }
+    }
+
+    return []
+
+  }, [lineId])
+
+  function getProblemsQuantityInTheSavedStation(stationId) {
+    const problems = JSON.parse(localStorage.getItem("problems")) || []
+
+    if (problems.length > 0) {
+      const problemsInTheLine = problems.filter(problem => problem.stationId === stationId)
+  
+      if (problemsInTheLine.length > 0) {
+        let problemsResolved = 0
+        let problemsUnresolved = 0
+        let problemsTotal = 0
+    
+        problemsInTheLine.forEach(problem => {
+          if (problem.resolved === true) problemsResolved++
+          else problemsUnresolved++
+          problemsTotal++
+        })
+    
+        const allProblems = {
+          problemsResolved,
+          problemsUnresolved,
+          problemsTotal
+        }
+    
+        return allProblems
+      }
+    }
+
+    return null
   }
 
   useEffect(() => {
     getLine()
     getFilteredSavedStations()
-  },[updateStationFromDatabase])
+  },[updateStationFromDatabase, getLine, getFilteredSavedStations])
 
   return (
     <main className='line-page'>

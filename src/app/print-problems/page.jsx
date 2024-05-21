@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 
 import Title from "@/components/Title"
@@ -19,25 +19,25 @@ export default function PrintProblemsPage() {
   const actualYear = setTwoNumbersDigits(date.getFullYear())
 
   function getItemsFromDatabase(item) {
-    const items = JSON.parse(localStorage.getItem(item))
-    if (items) return items
+    const items = JSON.parse(localStorage.getItem(item)) || []
+    return items
   }
 
   function mergeProblemsOfThisLine(problems, lineId) {
     const problemsOfThisLine = problems.filter(problem => problem.lineId === lineId)
-    if (!problemsOfThisLine) return
+    if (!problemsOfThisLine.length > 0) return []
     return problemsOfThisLine
   }
 
   function mergeProblemsOfThisLineStations(problems, stations, lineId) {
     const stationsOfThisLine = stations.filter(station => station.lineId === lineId)
-    if (!stationsOfThisLine) return
+    if (!stationsOfThisLine.length > 0) return []
 
     const problemsOfThisLineStations = []
     
     stationsOfThisLine.forEach(station => {
       const problemsOfThisStation = problems.filter(problem => problem.stationId === station.id)
-      if (!problemsOfThisStation) return
+      if (!problemsOfThisStation.length > 0) return []
 
       const desiredData = {
         name: station.name,
@@ -50,7 +50,7 @@ export default function PrintProblemsPage() {
     return problemsOfThisLineStations
   }
 
-  function getLinesAndStationsWithProblems() {
+  const getLinesAndStationsWithProblems = useCallback(() => {
     const allLines = getItemsFromDatabase("lines")
     const allStations = getItemsFromDatabase("stations")
     const allProblems = getItemsFromDatabase("problems")
@@ -75,11 +75,11 @@ export default function PrintProblemsPage() {
     })
 
     setLinesWithProblems(desiredLines)
-  }
+  }, [router])
   
   useEffect(() => {
     getLinesAndStationsWithProblems()
-  }, [])
+  }, [getLinesAndStationsWithProblems])
 
   useEffect(() => {
     if (allContentLoad === true) window.print()

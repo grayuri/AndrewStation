@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 
 import Title from '@/components/Title'
@@ -19,24 +19,24 @@ export default function StationPage() {
   const stationId = pathname.split("/")[2]
   
   function getProblemsFromDatabase() {
-    const problemsJson = localStorage.getItem("problems")
-    const data = JSON.parse(problemsJson)
-
-    return data
+    const problems = JSON.parse(localStorage.getItem("problems")) || []
+    return problems
   }
 
-  function getProblems() {
+  const getProblems = useCallback(() => {
     const storedProblems = getProblemsFromDatabase()
 
-    const filteredProblems = storedProblems?.filter(problem => 
-      (lineId === problem.lineId && stationId === problem.stationId)
-    )
-    
-    setProblems(filteredProblems)
-  }
+    if (storedProblems.length > 0) {
+      const filteredProblems = storedProblems.filter(problem => 
+        (lineId === problem.lineId && stationId === problem.stationId)
+      )
+      setProblems(filteredProblems)
+    }
+  }, [lineId, stationId])
 
   function addProblemIntoDatabase(problemAdded) {
-    const storedProblems = getProblemsFromDatabase() || []
+    const storedProblems = getProblemsFromDatabase()
+
     const allProblems = [...storedProblems]
 
     allProblems.push(problemAdded)
@@ -57,7 +57,7 @@ export default function StationPage() {
 
     let problemsWithThisProblem = []
 
-    if (!problems) {
+    if (!problems.length > 0) {
       setProblems(problemsWithThisProblem.push(problem))
     }
     else {
@@ -82,16 +82,19 @@ export default function StationPage() {
     deleteProblemFromDatabase(id)
   }
 
-  function getStation() {
-    const savedStations = JSON.parse(localStorage.getItem("stations"))
-    const desiredStation = savedStations.find(station => station.id === stationId)
-    setStation(desiredStation)
-  }
+  const getStation = useCallback(() => {
+    const savedStations = JSON.parse(localStorage.getItem("stations")) || []
+
+    if (savedStations.length > 0) {
+      const desiredStation = savedStations.find(station => station.id === stationId)
+      setStation(desiredStation)
+    }
+  }, [stationId])
 
   useEffect(() => {
     getStation()
     getProblems()
-  },[])
+  },[getStation, getProblems])
 
   return (
     <main className="station-page">
