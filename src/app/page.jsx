@@ -1,6 +1,8 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react";
+import { useFCContext } from "@/contexts/FCContext";
+import { notFound } from "next/navigation";
 
 import ProblemsOverviewCard from "@/components/ProblemsOverviewCard";
 import Title from "@/components/Title";
@@ -8,19 +10,25 @@ import AddButton from "@/components/AddButton";
 import ModalForm from "@/components/ModalForm";
 import GenericUpdateForm from "@/components/GenericUpdateForm";
 import PrintButton from "@/components/PrintButton";
+import AddFCWarning from "@/components/AddFCWarning";
+import ActualWarehouseTitle from "@/components/ActualWarehouseTitle";
+import GenericLoading from "@/components/GenericLoading";
+import haveNotEmptyStrings from "@/utils/haveNotEmptyStrings";
 import { Line } from "../../classes/Line";
 import './Home.scss';
 
 export default function Home() {
+  const { fc, loadingFc } = useFCContext()
+
   const [lines, setLines] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [focusedLine, setFocusedLine] = useState()
   const [showModal, setShowModal] = useState(false)
   
   function focusLine(id) {
     setShowModal(true)
-
-    const desiredLine = lines.find(line => line.id === id)
-
+    const desiredLine = lines.find(line => line._id === id)
     setFocusedLine(desiredLine)
   }
 
@@ -28,83 +36,101 @@ export default function Home() {
     setShowModal(false)
   }
 
-  function createLine() {
+  async function createLine() {
     const newLineProperties = {
       number: lines.length + 1,
       problemsResolved: 0,
-      problemsUnresolved: 0
+      problemsUnresolved: 0,
+      fcWarehouse: fc
     }
 
     const newLine = new Line(newLineProperties)
-    const linesWithThisLine = [...lines, newLine]
-
-    setLines(linesWithThisLine)
-
-    localStorage.setItem("lines", JSON.stringify(linesWithThisLine))
+    
+    const response = await fetch("/api/lines/", {
+      method: "POST",
+      body: JSON.stringify(newLine),
+      headers: { "Content-Type":"application/json" }
+    }, { cache: "no-store" })
+    const createdLine = await response.json()
+    
+    if (response.ok) {
+      newLine._id = createdLine.insertedId
+      setLines(currentLines => [...currentLines, newLine])
+    }
+    else {
+      setError({ 
+        status: response.status, 
+        informations: createdLine.error
+      })
+    }
   }
 
-  function updateLineFromDatabase(line) {
-    const linesWithoutUpdatedLine = lines.filter(l => l.id !== line.id)
-    const linesWithUpdatedLine = [...linesWithoutUpdatedLine, line]
-
-    setLines(linesWithUpdatedLine)
-
-    localStorage.setItem("lines", JSON.stringify(linesWithUpdatedLine))
-
-    setShowModal(false)
-  }
-
-  function updateLine(e, lineName) {
+  const updateLine = useCallback(async (e, lineName) => {
     e.preventDefault()
 
-    if (lineName === "") return
+    const notEmpty = haveNotEmptyStrings(lineName)
 
-    const updatedLine = {
-      ...focusedLine,
+    if (!notEmpty) return // toast
+
+    const lineUpdate = {
       name: lineName
     }
 
-    updateLineFromDatabase(updatedLine)
-  }
-
-  function deleteLine(id) {
-    const allStations = getAllDatabaseItems("stations")
-    const allProblems = getAllDatabaseItems("problems")
-
-    const linesWithoutThisLine = lines.filter(line => line.id !== id)
-    const stationsWithoutThisLine = allStations.filter(station => station.lineId !== id)
-    const problemsWithoutThisLine = allProblems.filter(problem => problem.lineId !== id)
-
-    setLines(linesWithoutThisLine)
-    localStorage.setItem("lines", JSON.stringify(linesWithoutThisLine))
-    localStorage.setItem("stations", JSON.stringify(stationsWithoutThisLine))
-    localStorage.setItem("problems", JSON.stringify(problemsWithoutThisLine))
-  }
-
-  const getSavedLines = useCallback(() => {
-    const savedLines = JSON.parse(localStorage.getItem("lines")) || []
-
-    if (savedLines.length > 0) {
-      const linesWithProblems = savedLines.map(line => ({
-        ...line,
-        ...getProblemsQuantityInTheSavedLine(line.id)
-      }))
-  
-      setLines(linesWithProblems)
+    const response = await fetch("/api/lines/" + focusedLine._id, {
+      method: "PATCH",
+      body: JSON.stringify(lineUpdate),
+      headers: { "Content-Type":"application/json" }
+    }, { cache: "no-store" })
+    
+    if (response.ok) setShowModal(false)
+    else {
+      setShowModal(false)
+      const responseData = await response.json()
+      setError({ 
+        status: response.status, 
+        informations: responseData.error
+      })
     }
-  }, [])
 
-  function getAllDatabaseItems(item) {
-    const items = JSON.parse(localStorage.getItem(item)) || []
-    return items
+  },[showModal])
+
+  async function deleteLine(id) {
+    const response = await fetch("/api/lines/" + id, { 
+      method: "DELETE",
+      headers: { "Content-Type":"application/json" }
+    }, { cache: "no-store" })
+
+    if (response.ok) {
+      const linesWithoutThisLine = lines.filter(line => line._id !== id)
+      setLines(linesWithoutThisLine)
+    }
+    else {
+      const responseData = await response.json()
+      setError({ 
+        status: response.status, 
+        informations: responseData.error
+      })
+    }
   }
 
-  function getProblemsQuantityInTheSavedLine(lineId) {
-    const problems = JSON.parse(localStorage.getItem("problems")) || []
+  const getProblems = useCallback(async () => {
+    const response = await fetch("/api/problems?fc=" + fc, { cache: "no-store" })
+    const savedProblems = await response.json()
+    if (response.ok) return savedProblems
+    else {
+      setError({ 
+        status: response.status, 
+        informations: savedProblems.error
+      })
+    }
+  },[fc])
 
-    if (problems.length > 0) {
-      const problemsInTheLine = problems.filter(problem => problem.lineId === lineId)
-  
+  function getProblemsQuantityInTheSavedLine(savedProblems, lineId) { 
+    if (!savedProblems.length > 0) return {}
+
+    const problemsInTheLine = savedProblems.filter(problem => problem.lineId === lineId)
+
+    if (problemsInTheLine.length > 0) {
       let problemsResolved = 0
       let problemsUnresolved = 0
       let problemsTotal = 0
@@ -124,39 +150,88 @@ export default function Home() {
       return allProblems
     }
 
-    return []
+    return {}
   }
 
+  const getLines = useCallback(async () => {
+    setLoading(true)
+
+    const problems = await getProblems()
+    const response = await fetch("/api/lines?fc=" + fc, { cache: "no-store" })
+    const savedLines = await response.json()
+    
+    if (response.ok) {
+      if (savedLines.length > 0) {
+        const linesWithProblems = savedLines.map(line => ({
+          ...line,
+          ...getProblemsQuantityInTheSavedLine(problems, line._id)
+        }))
+        
+        setLines(linesWithProblems)
+      }
+      setLoading(false)
+    }
+    else {
+      setError({ 
+        status: response.status, 
+        informations: savedLines.error
+      })
+    }
+
+  },[fc])
+
   useEffect(() => {
-    getSavedLines()
-  },[getSavedLines])
+    if (fc) {
+      getLines()
+    }
+    
+  },[updateLine, getProblems, getLines, fc])
+
+  useEffect(() => {
+    if (error !== null) {
+      if (error.status === 404) return notFound()
+      else throw error.informations
+    }
+  },[error])
+
+  if (loadingFc) return <GenericLoading />
+  
+  if (!fc && !loadingFc) return <AddFCWarning />
 
   return (
     <main className="home">
+      <ActualWarehouseTitle fc={fc} />
       <Title>Todas as <span className="highlight">Linhas</span></Title>
       <PrintButton />
-      <div className="lines">
-        {
-          lines.map(line => (
-            <ProblemsOverviewCard
-              name={line.name}
-              number={line.number}
-              problems={{ 
-                unsolved: line.problemsUnresolved, 
-                resolved: line.problemsResolved,
-                total: line.problemsTotal
-              }}
-              href={`/${line.id}`}
-              key={line.id}
-              id={line.id}
-              deleteItem={deleteLine}
-              openModal={focusLine}
-            />
-          ))
-        }
-        <AddButton onClick={createLine} />
-      </div>
-
+      {
+        loading
+        ? (
+          <GenericLoading />
+        )
+        : (
+          <div className="lines">
+            {
+              lines?.map((line, index) => (
+                <ProblemsOverviewCard
+                  name={line.name}
+                  number={line.number}
+                  problems={{ 
+                    unsolved: line.problemsUnresolved || 0, 
+                    resolved: line.problemsResolved || 0,
+                    total: line.problemsTotal || 0
+                  }}
+                  href={`/${line._id}`}
+                  key={index}
+                  id={line._id}
+                  deleteItem={deleteLine}
+                  openModal={focusLine}
+                />
+              ))
+            }
+            <AddButton onClick={createLine} />
+          </div>
+        )
+      }
       {
         showModal && (
           <ModalForm 

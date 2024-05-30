@@ -38,9 +38,21 @@
       }
     }
     
-    p {
-      color: $n2;
-      @include l2-r();
+    .informations {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+
+      .name {
+        color: $n3;
+        @include l2-b();
+      }
+
+      .last-update {
+        color: $n3;
+        @include l3-r();
+      }
     }
   }
 

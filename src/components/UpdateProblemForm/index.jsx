@@ -1,26 +1,14 @@
 "use client"
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckIcon from '@mui/icons-material/Check';
 import './styles.scss';
 
-export default function UpdateProblemForm({ problem, updateProblem }) {
-  const [updatedProblem, setUpdatedProblem] = useState()
-
+export default function UpdateProblemForm({ 
+  problem, updateProblem, nameInputRef, statusInputRef
+}) {
   const router = useRouter()
-
-  function setSpecificProblemProperty(e) {
-    const { name, value } = e.target
-
-    setUpdatedProblem(currentProperties => ({
-      ...currentProperties,
-      [name]: name === "resolved" 
-        ? (value === "true")
-        : value
-    }))
-  }
 
   return (
     <div className='update-problem-form-container'>
@@ -31,23 +19,23 @@ export default function UpdateProblemForm({ problem, updateProblem }) {
         />
       </div>
       <h3>Editar Problema</h3>
-      <form onSubmit={(e) => updateProblem(e, updatedProblem)}>
+      <form onSubmit={(e) => updateProblem(e)}>
         <label htmlFor="name">
           <span>Nome</span>
           <input 
+            ref={nameInputRef}
+            name='name' 
             type="text" 
             defaultValue={problem?.name} 
-            name='name' 
-            onChange={setSpecificProblemProperty}
           />
         </label>
         <label htmlFor="resolved">
           <span>Status</span>
           <select 
+            ref={statusInputRef}
             name="resolved" 
             id="status"
             defaultValue={problem?.resolved}
-            onChange={setSpecificProblemProperty}
           >
             <option value="">Insira um Valor</option>
             <option value="false">Não Resolvido</option>

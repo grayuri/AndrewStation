@@ -20,11 +20,12 @@ export default function PrintedProblems({ problems, confirmLoading }) {
       unresolved: problemsUnresolved,
       resolved: problemsResolved
     })
+    
+    confirmLoading()
   }
 
   useEffect(() => {
     getQuantityOfProblems()
-    confirmLoading()
   },[])
 
   return (

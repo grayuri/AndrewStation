@@ -1,0 +1,23 @@
+@import '../../variables.scss';
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+
+  .loading-text {
+    margin: auto;
+    color: $n3;
+    @include l1-r();
+    animation: 2s ease 0s infinite alternate loadingTextAnimation;
+  }
+}
+
+@keyframes loadingTextAnimation {
+  from {
+    scale: 1
+  }
+
+  to {
+    scale: 1.12
+  }
+}

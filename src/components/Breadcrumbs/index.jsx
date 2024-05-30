@@ -37,7 +37,7 @@ export default function Breadcrumbs() {
     <div className="breadcrumbs">
       {
         breadcrumbLinks.map((link, index) => (
-          <div className="link" key={link.path}>
+          <div className="link" key={index}>
             <Link 
               href={link.href}
               className={ index === breadcrumbLinks.length - 1 ? "actual-route" : "" }

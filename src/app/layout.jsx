@@ -1,3 +1,4 @@
+import { FCContextProvider } from '@/contexts/FCContext';
 import { Bitter, Montserrat } from 'next/font/google'
 import Header from "@/components/Header";
 import './globals.scss'
@@ -22,10 +23,12 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${bitter.variable} ${montserrat.variable}`}>
-        <Header />
-        {children}
-      </body>
+      <FCContextProvider>
+        <body className={`${bitter.variable} ${montserrat.variable}`}>
+          <Header />
+          {children}
+        </body>
+      </FCContextProvider>
     </html>
   );
 }

@@ -2,4 +2,11 @@ header {
   display: grid;
   place-items: center;
   margin-bottom: 64px;
+
+  .logo {
+    img {
+      height: auto;
+      width: auto;
+    }
+  }
 }

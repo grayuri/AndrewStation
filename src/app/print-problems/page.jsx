@@ -6,22 +6,23 @@ import { useRouter } from "next/navigation"
 import Title from "@/components/Title"
 import PrintedLine from "@/components/PrintedLine"
 import setTwoNumbersDigits from "@/utils/setTwoNumbersDigits"
-import './styles.scss'
+import GenericLoading from "@/components/GenericLoading"
+import AddFCWarning from "@/components/AddFCWarning"
+import './PrintProblemsPage.scss'
+import { useFCContext } from "@/contexts/FCContext"
 
 export default function PrintProblemsPage() {
+  const { fc, loadingFc } = useFCContext()
+
   const [linesWithProblems, setLinesWithProblems] = useState([])
+  const [error, setError] = useState(null)
   const [allContentLoad, setAllContentLoad] = useState(false)
 
   const router = useRouter()
   const date = new Date()
   const actualDate = setTwoNumbersDigits(date.getDate())
-  const actualMonth = setTwoNumbersDigits(date.getMonth())
+  const actualMonth = setTwoNumbersDigits((date.getMonth() + 1))
   const actualYear = setTwoNumbersDigits(date.getFullYear())
-
-  function getItemsFromDatabase(item) {
-    const items = JSON.parse(localStorage.getItem(item)) || []
-    return items
-  }
 
   function mergeProblemsOfThisLine(problems, lineId) {
     const problemsOfThisLine = problems.filter(problem => problem.lineId === lineId)
@@ -34,9 +35,9 @@ export default function PrintProblemsPage() {
     if (!stationsOfThisLine.length > 0) return []
 
     const problemsOfThisLineStations = []
-    
+
     stationsOfThisLine.forEach(station => {
-      const problemsOfThisStation = problems.filter(problem => problem.stationId === station.id)
+      const problemsOfThisStation = problems.filter(problem => problem.stationId === station._id)
       if (!problemsOfThisStation.length > 0) return []
 
       const desiredData = {
@@ -50,52 +51,105 @@ export default function PrintProblemsPage() {
     return problemsOfThisLineStations
   }
 
-  const getLinesAndStationsWithProblems = useCallback(() => {
-    const allLines = getItemsFromDatabase("lines")
-    const allStations = getItemsFromDatabase("stations")
-    const allProblems = getItemsFromDatabase("problems")
+  const getLinesAndStationsWithProblems = useCallback(async () => {
+    const allLinesResponse = await fetch("/api/lines?fc=" + fc, { cache: "no-store" })
+    const allStationsResponse = await fetch("/api/stations?fc=" + fc, { cache: "no-store" })
+    const allProblemsResponse = await fetch("/api/problems?fc=" + fc, { cache: "no-store" })
+    const allLines = await allLinesResponse.json()
+    const allStations = await allStationsResponse.json()
+    const allProblems = await allProblemsResponse.json()
 
-    if (!allProblems.length > 0) router.replace("/")
+    if (
+      allLinesResponse.ok &&
+      allStationsResponse.ok &&
+      allProblemsResponse.ok
+    ) {
+      if (!allProblems.length > 0) router.replace("/")
 
-    const desiredLines = []
-    
-    allLines.forEach(line => {
-      if (!allProblems.some(problem => problem.lineId === line.id)) return
-      const problemsOfThisLine = mergeProblemsOfThisLine(allProblems, line.id)
-      const stationsWithProblemsOfThisLine = mergeProblemsOfThisLineStations(
-        problemsOfThisLine, allStations, line.id
-      )
+      const desiredLines = []
 
-      const desiredData = {
-        name: line.name,
-        stations: stationsWithProblemsOfThisLine
+      allLines.forEach(line => {
+        if (!allProblems.some(problem => problem.lineId === line._id)) return
+        const problemsOfThisLine = mergeProblemsOfThisLine(allProblems, line._id)
+        const stationsWithProblemsOfThisLine = mergeProblemsOfThisLineStations(
+          problemsOfThisLine, allStations, line._id
+        )
+
+        const desiredData = {
+          name: line.name,
+          stations: stationsWithProblemsOfThisLine
+        }
+
+        desiredLines.push(desiredData)
+      })
+
+      setLinesWithProblems(desiredLines)
+    }
+    else {
+      if (allLines.error) {
+        setError({ 
+          status: allLinesResponse.status, 
+          informations: allLines.error
+        })
+        return
       }
 
-      desiredLines.push(desiredData)
-    })
+      if (allStations.error) {
+        setError({ 
+          status: allStationsResponse.status, 
+          informations: allStations.error
+        })
+        return
+      }
 
-    setLinesWithProblems(desiredLines)
-  }, [router])
-  
+      if (allProblems.error) {
+        setError({ 
+          status: allProblemsResponse.status, 
+          informations: allProblems.error
+        })
+        return
+      }
+    }
+  }, [fc, router])
+
   useEffect(() => {
-    getLinesAndStationsWithProblems()
-  }, [getLinesAndStationsWithProblems])
+    if (fc) getLinesAndStationsWithProblems()
+  }, [fc])
 
   useEffect(() => {
     if (allContentLoad === true) window.print()
   }, [allContentLoad])
 
+  useEffect(() => {
+    if (error !== null) {
+      if (error.status === 404) return notFound()
+      else throw error.informations
+    }
+  },[error])
+
+  if (loadingFc) return <GenericLoading />
+
+  if (!fc && !loadingFc) return <AddFCWarning />
+
   return (
     <main className="print-problems-page">
       <Title><span className="highlight">Problemas</span> Atuais ({actualDate}/{actualMonth}/{actualYear})</Title>
       <p className="borderline" />
-      <div className="lines">
-        {
-          linesWithProblems?.map(line => (
-            <PrintedLine line={line} key={line.id} confirmLoading={() => setAllContentLoad(true)} />
-          ))
-        }
-      </div>
+      {
+        linesWithProblems.length === 0
+          ? (
+            <GenericLoading />
+          )
+          : (
+            <div className="lines">
+              {
+                linesWithProblems?.map((line, index) => (
+                  <PrintedLine line={line} key={index} confirmLoading={() => setAllContentLoad(true)} />
+                ))
+              }
+            </div>
+          )
+      }
     </main>
   )
 }

@@ -1,61 +1,91 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useEffect, useState, useRef } from "react";
+import { notFound, usePathname, useRouter } from "next/navigation";
 
 import StationPage from "../page";
 import UpdateProblemForm from "@/components/UpdateProblemForm";
+import haveNotEmptyStrings from "@/utils/haveNotEmptyStrings";
 import './UpdateProblemPage.scss';
 
 export default function UpdateProblemPage() {
+  const nameInputRef = useRef(null)
+  const statusInputRef = useRef(null)
+
   const [problem, setProblem] = useState()
+  const [error, setError] = useState(null)
 
   const router = useRouter()
   const pathname = usePathname()
   const problemId = pathname.split("/")[3]
 
-  function getProblemsFromDatabase() {
-    const problems = JSON.parse(localStorage.getItem("problems")) || []
-    return problems
-  }
+  const getProblem = useCallback(async () => {
+    const response = await fetch("/api/problems/" + problemId, { cache: "no-store" })
+    const actualProblem = await response.json()
 
-  const getProblem = useCallback(() => {
-    const problems = getProblemsFromDatabase()
-
-    if (problems.length > 0) {
-      const desiredProblem = problems.find(problem => problem.id === problemId)
-      setProblem(desiredProblem)
+    if (response.ok) {
+      setProblem(actualProblem)
     }
+    else {
+      setError({ 
+        status: response.status, 
+        informations: actualProblem.error
+      })
+    }
+
   }, [problemId])
 
-  function updateProblemFromDatabase(problem) {
-    const problems = getProblemsFromDatabase()
-
-    const problemsWithoutThisProblem = problems?.filter(p => p.id !== problem.id) || []
-    const problemsWithUpdatedProblem = [ ...problemsWithoutThisProblem, problem ]
-
-    localStorage.setItem("problems", JSON.stringify(problemsWithUpdatedProblem))
-
-    router.back()
-  }
-
-  function updateProblem(e, updatedProblem) {
+  async function updateProblem(e) {
     e.preventDefault()
 
-    if (updatedProblem?.name === "") return
-    if (typeof(updatedProblem?.resolved) !== "boolean") return
+    const problemData = {}
 
-    const newProblem = {
-      ...problem,
-      ...updatedProblem
+    if (nameInputRef.current.value) problemData.name = nameInputRef.current.value
+    if (statusInputRef.current.value) problemData.resolved = statusInputRef.current.value
+
+    let notEmpty;
+
+    if (problemData.name) notEmpty = haveNotEmptyStrings(problemData.name)
+    
+    if (!notEmpty) return //toast
+    
+    if (typeof(problemData.resolved) !== "boolean") {
+      if (problemData.resolved === "true") problemData.resolved = true
+      else if (problemData.resolved === "false") problemData.resolved = false
+      else return
     }
 
-    updateProblemFromDatabase(newProblem)
+    const problemUpdate = {
+      ...problemData,
+      lastTimeUpdated: new Date().toString()
+    }
+
+    const response = await fetch("/api/problems/" + problemId, {
+      method: "PATCH",
+      body: JSON.stringify(problemUpdate),
+      headers: { "Content-Type":"application/json" }
+    }, { cache: "no-store" })
+
+    if (response.ok) router.back()
+    else {
+      const responseData = await response.json()
+      setError({ 
+        status: response.status, 
+        informations: responseData.error
+      })
+    }
   }
 
   useEffect(() => {
     getProblem()
   }, [getProblem])
+
+  useEffect(() => {
+    if (error !== null) {
+      if (error.status === 404) return notFound()
+      else throw error.informations
+    }
+  },[error])
 
   return (
     <div className="problem-page">
@@ -64,11 +94,17 @@ export default function UpdateProblemPage() {
         <StationPage />
       </div>
       <div className="current-page">
-        <UpdateProblemForm 
-          problem={problem} 
-          id={problemId} 
-          updateProblem={updateProblem}
-        />
+        {
+          problem && (
+            <UpdateProblemForm 
+              problem={problem} 
+              id={problemId} 
+              updateProblem={updateProblem}
+              nameInputRef={nameInputRef}
+              statusInputRef={statusInputRef}
+            />
+          )
+        }
       </div>
     </div>
   )

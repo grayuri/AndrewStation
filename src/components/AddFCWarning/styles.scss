@@ -1,0 +1,25 @@
+@import '../../variables.scss';
+
+.add-fc-warning {
+  .image-container {
+    position: relative;
+    height: 360px;
+    margin: 24px;
+  }
+
+  p {
+    text-align: center;
+    color: $n3;
+    @include p1-r();
+  }
+
+  a {
+    color: $n3;
+    text-decoration: underline;
+    transition: 0.24s ease;
+
+    &:hover {
+      color: $n1;
+    }
+  }
+}

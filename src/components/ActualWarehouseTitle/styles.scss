@@ -1,0 +1,34 @@
+@import '../../variables.scss';
+
+.actual-warehouse-title {
+  display: flex;
+  gap: 24px;
+  padding: 24px;
+  background-image: linear-gradient(225deg, #4e85b3 0, #3979aa 50%, #1d6da1 100%);
+  width: fit-content;
+  align-items: center;
+  margin: 12px auto;
+  border-radius: 24px;
+  @include umbra24DP();
+  
+  h1 {
+    color: $n6;
+    @include l1-r();  
+
+    .highlight {
+      @include l1-b();
+      color: $yellow-1;
+    }
+  }
+
+  .icon {
+    color: $n5;
+    @include h2();
+    cursor: pointer;
+    transition: 0.24s ease;
+
+    &:hover {
+      color: $n6;
+    }
+  }
+}

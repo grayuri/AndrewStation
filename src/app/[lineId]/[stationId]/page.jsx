@@ -1,94 +1,115 @@
 "use client"
 
 import { useCallback, useEffect, useState } from 'react'
-import { usePathname } from 'next/navigation'
+import { notFound, usePathname } from 'next/navigation'
+import { useFCContext } from '@/contexts/FCContext'
 
 import Title from '@/components/Title'
 import SingleProblem from '@/components/Problem'
 import AddButton from '@/components/AddButton'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import AddFCWarning from '@/components/AddFCWarning'
+import GenericLoading from '@/components/GenericLoading'
 import { Problem } from '../../../../classes/Problem'
 import './StationPage.scss'
 
 export default function StationPage() {
+  const { fc, loadingFc } = useFCContext()
+
   const [station, setStation] = useState()
   const [problems, setProblems] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   const pathname = usePathname()
   const lineId = pathname.split("/")[1]
   const stationId = pathname.split("/")[2]
-  
-  function getProblemsFromDatabase() {
-    const problems = JSON.parse(localStorage.getItem("problems")) || []
-    return problems
-  }
 
-  const getProblems = useCallback(() => {
-    const storedProblems = getProblemsFromDatabase()
+  const getProblems = useCallback(async () => {
+    setLoading(true)
 
-    if (storedProblems.length > 0) {
-      const filteredProblems = storedProblems.filter(problem => 
-        (lineId === problem.lineId && stationId === problem.stationId)
-      )
+    const filterUrl = `lineId=${lineId}&stationId=${stationId}`
+    const response = await fetch("/api/problems?" + filterUrl, { cache: "no-store" })
+    const filteredProblems = await response.json()
+
+    if (response.ok) {
       setProblems(filteredProblems)
+      setLoading(false)
     }
+    else {
+      setError({ 
+        status: response.status, 
+        informations: filteredProblems.error
+      })
+    }
+
   }, [lineId, stationId])
 
-  function addProblemIntoDatabase(problemAdded) {
-    const storedProblems = getProblemsFromDatabase()
-
-    const allProblems = [...storedProblems]
-
-    allProblems.push(problemAdded)
-
-    localStorage.setItem("problems", JSON.stringify(allProblems))
-  }
-
-  function createProblem() {
+  async function createProblem() {
     const problemNumber = problems?.length + 1 || 1
 
-    const problem = new Problem({
+    const newProblem = new Problem({
       name: `Problema ${problemNumber}`,
       number: problemNumber,
       lineId,
       stationId,
-      resolved: false
+      resolved: false,
+      lastTimeUpdated: "",
+      fcWarehouse: fc
     })
+    
+    const response = await fetch("/api/problems", {
+      method: "POST",
+      body: JSON.stringify(newProblem),
+      headers: { "Content-type":"Application/json" }
+    }, { cache: "no-store" })
+    const createdProblem = await response.json()
 
-    let problemsWithThisProblem = []
-
-    if (!problems.length > 0) {
-      setProblems(problemsWithThisProblem.push(problem))
+    if (response.ok) {
+      newProblem._id = createdProblem.insertedId
+      setProblems(currentProblems => [...currentProblems, newProblem])
     }
     else {
-      problemsWithThisProblem = [...problems, problem]
+      if (response.status === 404) notFound()
+      else setError(createdProblem.error)
+    }
+  }
+
+  async function deleteProblem(id) {
+    const problemsWithoutThisProblem = problems.filter(problem => problem._id !== id)
+
+    const response = await fetch("/api/problems/" + id, {
+      method: "DELETE",
+      headers: { "Content-Type":"application/json" }
+    }, { cache: "no-store" })
+
+    if (response.ok) {
+      setProblems(problemsWithoutThisProblem)
+    }
+    else {
+      const responseData = await response.json()
+      setError({ 
+        status: response.status, 
+        informations: responseData.error
+      })
+    }
+  }
+
+  const getStation = useCallback(async () => {
+    const response = await fetch("/api/stations/" + stationId, { cache: "no-store" }) 
+    const actualStation = await response.json()
+
+    if (response.ok) {
+      if (actualStation) setStation(actualStation)
+      else notFound()
+    }
+    else {
+      setError({ 
+        status: response.status, 
+        informations: actualStation.error
+      })
     }
     
-    setProblems(problemsWithThisProblem)
-    addProblemIntoDatabase(problem)
-  }
-
-  function deleteProblemFromDatabase(id) {
-    const storedProblems = getProblemsFromDatabase() || []
-    const problemsWithoutThisProblem = storedProblems.filter(problem => problem.id !== id)
-
-    localStorage.setItem("problems", JSON.stringify(problemsWithoutThisProblem))
-  }
-
-  function deleteProblem(id) {
-    const problemsWithoutThisProblem = problems.filter(problem => problem.id !== id)
-
-    setProblems(problemsWithoutThisProblem)
-    deleteProblemFromDatabase(id)
-  }
-
-  const getStation = useCallback(() => {
-    const savedStations = JSON.parse(localStorage.getItem("stations")) || []
-
-    if (savedStations.length > 0) {
-      const desiredStation = savedStations.find(station => station.id === stationId)
-      setStation(desiredStation)
-    }
   }, [stationId])
 
   useEffect(() => {
@@ -96,24 +117,46 @@ export default function StationPage() {
     getProblems()
   },[getStation, getProblems])
 
-  return (
+  useEffect(() => {
+    if (error !== null) {
+      if (error.status === 404) return notFound()
+      else throw error.informations
+    }
+  },[error])
+
+  if (loadingFc) return <GenericLoading />
+  
+  if (!fc && !loadingFc) return <AddFCWarning />
+
+  if (!station) return <GenericLoading />
+
+  if (station) return (
     <main className="station-page">
       <Title>Problemas da <span className="highlight">{station?.name}</span></Title>
       <Breadcrumbs />
-      <div className="problems">
-        {
-          problems?.map(problem => (
-            <SingleProblem 
-              key={problem.id}
-              id={problem.id}
-              name={problem.name}
-              resolved={problem.resolved}
-              deleteProblem={deleteProblem}
-            />
-          )) 
-        }
-        <AddButton onClick={createProblem} />
-      </div>
+      {
+        loading
+        ? (
+          <GenericLoading />
+        )
+        : (
+          <div className="problems">
+            {
+              problems?.map((problem, index) => (
+                <SingleProblem 
+                  key={index}
+                  id={problem._id}
+                  name={problem.name}
+                  resolved={problem.resolved}
+                  lastTimeUpdated={problem.lastTimeUpdated}
+                  deleteProblem={deleteProblem}
+                />
+              )) 
+            }
+            <AddButton onClick={createProblem} />
+          </div>
+        )
+      }
     </main>
   )
 }
