@@ -18,6 +18,7 @@ export default function GenericErrorPage({ title, message, statusCode, reset }) 
         src="/images/error-page-image.svg"
         width={913 / 3}
         height={898 / 3}
+        priority
         alt="Error Page Image"
       />
       <h2>{ title } - Erro { statusCode }</h2>

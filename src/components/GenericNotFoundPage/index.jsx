@@ -9,6 +9,7 @@ export default function GenericNotFoundPage({ title }) {
         src="/images/page-not-found-image.svg"
         width={913 / 3}
         height={898 / 3}
+        priority
         alt="Page Not Found Image"
       />
       <h2>Erro 404</h2>
